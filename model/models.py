@@ -65,3 +65,13 @@ class OrderDetails(models.Model):
 
     class Meta:
         verbose_name_plural = 'Order details'
+
+
+class Cart(models.Model):
+    cart_id = models.AutoField(primary_key=True)
+    product = models.ForeignKey(Products, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    stock = models.IntegerField()
+
+    def __str__(self):
+        return f"{user}-{product}"
