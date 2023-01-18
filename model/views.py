@@ -7,6 +7,9 @@ from .models import *
 @api_view(['GET'])
 def all_product(request):
     product = Products.objects.values('product_id', 'name', 'price', 'stock', 'product_type__name')
+    for item in product:
+        item['price'] = f"Rp. {item['price']:,}"
+
     return Response(product)
 
 
@@ -17,18 +20,51 @@ def address(request):
 
 
 @api_view(['POST'])
-def addOrders(request):
+def history_order(request):
+    """
+       sample_body = {
+           "username": "admin-aja"
+       }
+       """
+    data = request.data
+    try:
+        user = CustomUser.objects.get(username=data.get("username"))
+    except CustomUser.DoesNotExist:
+        response = {"message": "User tidak ditemukan"}
+    else:
+        response = OrderDetails.objects.filter(order__user=user).values('qty',
+                                                                        'product__name',
+                                                                        'order__gross_amount',
+                                                                        'order__status')
+        for item in response:
+            item['order__gross_amount'] = f"Rp. {item['order__gross_amount']:,}"
+
+    return Response(response)
+
+
+@api_view(['POST'])
+def add_orders(request):
     data = request.data
     """
        sample_body = {
-           "nama_produk": "Jordan 1 Kg",
-           "jenis_produk": "herbisida",
-           "no_faktur_pembelian": "42",
-           "kuantitas": "9",
-           "harga_satuan": "20000.0",
-           "tanggal_kadaluarsa": "24 Nov 2022"
+           "product_id": "1",
+           "username": "admin-aja",
+           "quantity": "42"
        }
        """
-    # add_produk = Order(
-    #     product
-    # )
+
+    product = Products.objects.get(product_id=data.get('product_id'))
+    add_order = Order(
+        user=CustomUser.objects.get(username=data.get("username")),
+        gross_amount=product.price * int(data.get('quantity')),
+        status='Belum diterima'
+    )
+    add_order_detail = OrderDetails(
+        order=add_order,
+        product=product,
+        qty=data.get('quantity')
+    )
+    add_order.save()
+    add_order_detail.save()
+
+    return Response(data)

@@ -30,7 +30,7 @@ class ProductType(models.Model):
 class Products(models.Model):
     product_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
-    price = models.FloatField()
+    price = models.IntegerField()
     stock = models.IntegerField()
     product_type = models.ForeignKey(ProductType, on_delete=models.SET_NULL, null=True, blank=True)
 
