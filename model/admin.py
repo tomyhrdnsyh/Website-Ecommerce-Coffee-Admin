@@ -5,7 +5,7 @@ from .models import *
 
 
 # Register your models here.
-admin.site.unregister(Group)
+# admin.site.unregister(Group)
 
 
 class CustomUserAdmin(UserAdmin):
