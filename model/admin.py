@@ -28,6 +28,11 @@ class ProductTypeAdmin(admin.ModelAdmin):
     list_display = ("product_type_id", "name")
 
 
+@admin.register(ProductCategory)
+class ProductCategoryAdmin(admin.ModelAdmin):
+    list_display = ("product_category_id", "name")
+
+
 @admin.register(Products)
 class ProductsAdmin(admin.ModelAdmin):
     list_display = ("product_id", "name", "price", "stock", "product_type")
@@ -46,4 +51,4 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ("cart_id", "product", "user", "stock")
+    list_display = ("cart_id", "product", "user", "qty")

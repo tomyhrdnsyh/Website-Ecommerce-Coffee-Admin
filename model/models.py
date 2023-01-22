@@ -27,12 +27,21 @@ class ProductType(models.Model):
         return self.name
 
 
+class ProductCategory(models.Model):
+    product_category_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=10)
+
+    def __str__(self):
+        return self.name
+
+
 class Products(models.Model):
     product_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     price = models.IntegerField()
     stock = models.IntegerField()
     product_type = models.ForeignKey(ProductType, on_delete=models.SET_NULL, null=True, blank=True)
+    product_category = models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"{self.name}-{self.product_type}"
@@ -71,7 +80,7 @@ class Cart(models.Model):
     cart_id = models.AutoField(primary_key=True)
     product = models.ForeignKey(Products, on_delete=models.CASCADE)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    stock = models.IntegerField()
+    qty = models.IntegerField()
 
     def __str__(self):
-        return f"{user}-{product}"
+        return f"{self.user}-{self.product}"
