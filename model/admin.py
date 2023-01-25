@@ -1,11 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
+
 from .models import *
 
-
 # Register your models here.
-# admin.site.unregister(Group)
+admin.site.unregister(Group)
 
 
 class CustomUserAdmin(UserAdmin):
@@ -38,15 +38,43 @@ class ProductsAdmin(admin.ModelAdmin):
     list_display = ("product_id", "name", "price", "stock", "product_type", "product_category")
 
 
+class TestingAdmin(admin.TabularInline):
+    model = OrderDetails
+    extra = 1
+
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ("order_id", "user", "created_at", "updated_at",
-                    "gross_amount", "status")
+    inlines = [TestingAdmin]
+    list_display = ("order_id", "user", "created_at", "gross_amount", "status")
+    readonly_fields = ("order_id", "user")
+    # search_fields = ['user']
 
 
 @admin.register(OrderDetails)
-class OrderAdmin(admin.ModelAdmin):
-    list_display = ("order_detail_id", "order", "product", "qty")
+class OrderAdminDetails(admin.ModelAdmin):
+    list_display = ("order", "get_user", "product", "qty", "get_created_at", "get_payment_type",
+                    "get_gross_amount", "get_status")
+
+    @admin.display(ordering=['order__user'], description='User')
+    def get_user(self, obj):
+        return obj.order.user
+
+    @admin.display(ordering=['order__created_at'], description='Transaction time')
+    def get_created_at(self, obj):
+        return obj.order.created_at
+
+    @admin.display(ordering=['order__payment_type'], description='Payment type')
+    def get_payment_type(self, obj):
+        return obj.order.payment_type
+
+    @admin.display(ordering=['product__price'], description='Total')
+    def get_gross_amount(self, obj):
+        return obj.product.price * obj.qty
+
+    @admin.display(ordering=['order__status'], description='Status')
+    def get_status(self, obj):
+        return obj.order.status
 
 
 @admin.register(Cart)

@@ -55,9 +55,9 @@ class Order(models.Model):
     product = models.ManyToManyField(Products, through='OrderDetails')
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     created_at = models.DateTimeField(editable=False, auto_now_add=True)
-    updated_at = models.DateTimeField(null=True, blank=True)
     gross_amount = models.IntegerField()
     status = models.CharField(max_length=50)
+    payment_type = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return str(self.order_id)
@@ -73,7 +73,7 @@ class OrderDetails(models.Model):
         return str(self.product)
 
     class Meta:
-        verbose_name_plural = 'Order details'
+        verbose_name_plural = 'Order Details'
 
 
 class Cart(models.Model):
