@@ -38,43 +38,58 @@ class ProductsAdmin(admin.ModelAdmin):
     list_display = ("product_id", "name", "price", "stock", "product_type", "product_category")
 
 
-class TestingAdmin(admin.TabularInline):
+class OrderDetailInline(admin.TabularInline):
     model = OrderDetails
     extra = 1
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    inlines = [TestingAdmin]
-    list_display = ("order_id", "user", "created_at", "gross_amount", "status")
-    readonly_fields = ("order_id", "user")
-    # search_fields = ['user']
+    inlines = [OrderDetailInline]
+    list_display = ("order_id", "transaction_time", "user", "get_products",
+                    "payment_type", "total", "status")
+
+    # search_fields = ["user", "status"]
+
+    @admin.display(ordering='product__price', description='Total')
+    def total(self, obj):
+        total = sum([item['price'] * item['orderdetails__qty'] for item in obj.product.values('price',
+                                                                                              'orderdetails__qty')])
+        return total
+
+    @admin.display(ordering='product__name', description='Product')
+    def get_products(self, obj):
+        return " || ".join([f"{p['orderdetails__qty']}x {p['name']}" for p in obj.product.values('name',
+                                                                                                 'orderdetails__qty')])
+
+    # def get_qty(self):
+    #     return self.orderdetails.qty
 
 
-@admin.register(OrderDetails)
-class OrderAdminDetails(admin.ModelAdmin):
-    list_display = ("order", "get_user", "product", "qty", "get_created_at", "get_payment_type",
-                    "get_gross_amount", "get_status")
-
-    @admin.display(ordering=['order__user'], description='User')
-    def get_user(self, obj):
-        return obj.order.user
-
-    @admin.display(ordering=['order__created_at'], description='Transaction time')
-    def get_created_at(self, obj):
-        return obj.order.created_at
-
-    @admin.display(ordering=['order__payment_type'], description='Payment type')
-    def get_payment_type(self, obj):
-        return obj.order.payment_type
-
-    @admin.display(ordering=['product__price'], description='Total')
-    def get_gross_amount(self, obj):
-        return obj.product.price * obj.qty
-
-    @admin.display(ordering=['order__status'], description='Status')
-    def get_status(self, obj):
-        return obj.order.status
+# @admin.register(OrderDetails)
+# class OrderAdminDetails(admin.ModelAdmin):
+#     list_display = ("order", "get_user", "product", "qty", "get_created_at", "get_payment_type",
+#                     "get_gross_amount", "get_status")
+#
+#     @admin.display(ordering=['order__user'], description='User')
+#     def get_user(self, obj):
+#         return obj.order.user
+#
+#     @admin.display(ordering=['order__created_at'], description='Transaction time')
+#     def get_created_at(self, obj):
+#         return obj.order.created_at
+#
+#     @admin.display(ordering=['order__payment_type'], description='Payment type')
+#     def get_payment_type(self, obj):
+#         return obj.order.payment_type
+#
+#     @admin.display(ordering=['product__price'], description='Total')
+#     def get_gross_amount(self, obj):
+#         return obj.product.price * obj.qty
+#
+#     @admin.display(ordering=['order__status'], description='Status')
+#     def get_status(self, obj):
+#         return obj.order.status
 
 
 @admin.register(Cart)

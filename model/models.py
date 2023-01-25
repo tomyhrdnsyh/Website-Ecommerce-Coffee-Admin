@@ -54,7 +54,7 @@ class Order(models.Model):
     order_id = models.AutoField(primary_key=True)
     product = models.ManyToManyField(Products, through='OrderDetails')
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(editable=False, auto_now_add=True)
+    transaction_time = models.DateTimeField(editable=False, auto_now_add=True)
     gross_amount = models.IntegerField()
     status = models.CharField(max_length=50)
     payment_type = models.CharField(max_length=50, null=True, blank=True)
