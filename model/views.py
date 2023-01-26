@@ -5,6 +5,8 @@ from .models import *
 import pandas as pd
 from collections import defaultdict
 from datetime import datetime
+import midtransclient
+import uuid
 
 
 # Create your views here.
@@ -230,7 +232,27 @@ def add_orders(request):
     add_order.save()
     add_order_detail.save()
 
-    return Response(data)
+    fee_ongkir = 10000
+    item_detail = [
+        {
+            "id": product.product_id,
+            "price": product.price,
+            "quantity": int(data.get('quantity')),
+            "name": product.name,
+        },
+        {
+            "price": fee_ongkir,
+            "quantity": 1,
+            "name": 'Ongkos Kirim',
+        }
+    ]
+
+    total_price = [product.price * int(data.get('quantity')), fee_ongkir]
+
+    transaction = payment_midtrans(sum(total_price), add_order, item_detail)
+    response = {"message": transaction['redirect_url']}
+
+    return Response(response)
 
 
 @api_view(['POST'])
@@ -255,6 +277,7 @@ def add_order_from_cart(request):
         )
         add_order.save()
 
+        total_price, item_detail = [], []
         for item in cart:
             add_order_detail = OrderDetails(
                 order=add_order,
@@ -263,10 +286,58 @@ def add_order_from_cart(request):
             )
             add_order_detail.save()
 
-        cart.delete()
-        response = {"message": "Checkout berhasil!"}
+            product = Products.objects.get(product_id=item.product_id)
+            item_detail.append(
+                {
+                    "id": item.product_id,
+                    "price": product.price,
+                    "quantity": item.qty,
+                    "name": product.name,
+                }
+            )
+            total_price.append(product.price * item.qty)
+
+        # cart.delete()
+
+        fee_ongkir = 10000
+        ongkir = {
+            "price": fee_ongkir,
+            "quantity": 1,
+            "name": 'Ongkos Kirim',
+        }
+        item_detail.append(ongkir)
+        total_price.append(fee_ongkir)
+
+        transaction = payment_midtrans(sum(total_price), add_order, item_detail)
+
+        response = {"message": transaction['redirect_url']}
 
     return Response(response)
+
+
+def payment_midtrans(price, order_id, item_detail: list):
+    snap = midtransclient.Snap(
+        is_production=False,
+        server_key='SB-Mid-server-01NTFWb6l738KBzH0OWZuhks',
+        client_key='SB-Mid-client-UsEaLuaU7PMBbq_u'
+    )
+
+    param = {
+        "transaction_details": {
+            "order_id": f"{order_id}",
+            "gross_amount": price
+        },
+        "item_details": item_detail,
+        "credit_card": {
+            "secure": True
+        },
+        "callbacks": {
+            "finish": "https://tomyhrdnsyh28.pythonanywhere.com/"
+        },
+    }
+
+    transaction = snap.create_transaction(param)
+    return transaction
 
 
 @api_view(['POST'])
