@@ -26,6 +26,9 @@ class ProductType(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name_plural = 'Produk tipe'
+
 
 class ProductCategory(models.Model):
     product_category_id = models.AutoField(primary_key=True)
@@ -33,6 +36,9 @@ class ProductCategory(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name_plural = 'Produk kategori'
 
 
 class Products(models.Model):
@@ -47,7 +53,7 @@ class Products(models.Model):
         return f"{self.name}-{self.product_type}"
 
     class Meta:
-        verbose_name_plural = 'Products'
+        verbose_name_plural = 'Produk'
 
 
 class Order(models.Model):
@@ -61,6 +67,9 @@ class Order(models.Model):
 
     def __str__(self):
         return str(self.order_id)
+
+    class Meta:
+        verbose_name_plural = 'Order'
 
 
 class OrderDetails(models.Model):
@@ -84,3 +93,6 @@ class Cart(models.Model):
 
     def __str__(self):
         return f"{self.user}-{self.product}"
+
+    class Meta:
+        verbose_name_plural = 'Keranjang'

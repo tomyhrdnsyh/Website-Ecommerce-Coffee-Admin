@@ -184,6 +184,7 @@ def history_order_details(request):
 
     return Response(response)
 
+
 @api_view(['POST'])
 def acc_order(request):
     """
