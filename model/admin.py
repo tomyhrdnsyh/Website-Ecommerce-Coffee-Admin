@@ -47,7 +47,7 @@ class OrderDetailInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderDetailInline]
     list_display = ("order_id", "transaction_time", "user", "get_products",
-                    "payment_type", "total", "status")
+                    "payment_type", "payment_status", "total", "status")
 
     # search_fields = ["user", "status"]
 

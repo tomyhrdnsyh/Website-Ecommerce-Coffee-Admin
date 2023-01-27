@@ -4,18 +4,44 @@ from rest_framework.response import Response
 from .models import *
 import pandas as pd
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, date
 import midtransclient
 import uuid
 
+
+def update_status_payment():
+
+    api_client = midtransclient.CoreApi(
+        is_production=False,
+        server_key='SB-Mid-server-01NTFWb6l738KBzH0OWZuhks',
+        client_key='SB-Mid-client-UsEaLuaU7PMBbq_u'
+    )
+
+    order_payment = Order.objects.all()
+    for item in order_payment:
+        selisih = date.today() - item.transaction_time.replace(tzinfo=None).date()
+
+        if int(selisih.days) < 2:
+            try:
+                status_response = api_client.transactions.status(str(item.order_id))
+            except Exception as e:
+                err = e
+                print(err)
+            else:
+                item.payment_status = status_response.get('transaction_status')
+                item.payment_type = status_response.get('payment_type')
+                item.save()
 
 # Create your views here.
 @api_view(['GET'])
 def all_product(request):
     product = Products.objects.values('product_id', 'name', 'price', 'stock', 'product_type__name',
                                       'product_category__name')
+
     for item in product:
         item['price'] = f"Rp. {item['price']:,}"
+
+    update_status_payment()
 
     return Response(product)
 
@@ -297,7 +323,7 @@ def add_order_from_cart(request):
             )
             total_price.append(product.price * item.qty)
 
-        # cart.delete()
+        cart.delete()
 
         fee_ongkir = 10000
         ongkir = {
@@ -332,7 +358,7 @@ def payment_midtrans(price, order_id, item_detail: list):
             "secure": True
         },
         "callbacks": {
-            "finish": "https://tomyhrdnsyh28.pythonanywhere.com/"
+            "finish": ""
         },
     }
 

@@ -64,6 +64,7 @@ class Order(models.Model):
     gross_amount = models.IntegerField()
     status = models.CharField(max_length=50)
     payment_type = models.CharField(max_length=50, null=True, blank=True)
+    payment_status = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return str(self.order_id)
