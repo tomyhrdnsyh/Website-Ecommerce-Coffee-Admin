@@ -203,7 +203,7 @@ def history_order_details(request):
     data = request.data
     try:
         order = Order.objects.filter(order_id=data.get("order_id")).values(
-            'order_id', 'orderdetails__qty', 'product__name', 'product__product_type__name', 'product__price'
+            'order_id', 'orderdetails__qty', 'product__name', 'product__product_type__name', 'product__price', 'payment_type'
         )
     except CustomUser.DoesNotExist:
         response = {"message": "Order tidak ditemukan"}
