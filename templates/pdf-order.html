@@ -1,0 +1,90 @@
+{% extends "base-fullscreen.html" %}
+{% load static %}
+{% block title %} Export Penjualan {% endblock %}
+{% block stylesheets %}
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="{% static '/plugins/fontawesome-free/css/all.min.css' %}">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{% static '/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static '/plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="{% static '/css/adminlte.min.css' %}">
+
+{% endblock stylesheets %}
+
+{% block content %}
+    <div class="content">
+        <!-- Main content -->
+        <section class="content">
+          <div class="container-fluid">
+          <!-- header -->
+          <div class="mb-3 mt-3">
+              <h3 >Laporan Penjualan Kedai Mehak</h3>
+          </div>
+            <div class="row">
+              <div class="col-12">
+
+                <!-- /.card -->
+                <div class="card">
+                  <div class="card-header">
+                      <h3 class="card-title">Penjualan</h3>
+                      <div class="float-sm-right">
+                          Pengguna : <b>{{ request.user.username }}</b>
+                      </div>
+                  </div>
+                  <!-- /.card-header -->
+                  <div class="card-body">
+                    <table id="table-penjualan" class="table table-bordered table-striped">
+                      <thead>
+                      <tr>
+                        <th>Order ID</th>
+                        <th>Waktu Transaksi</th>
+                        <th>Nama Konsumen</th>
+                        <th>Produk</th>
+                        <th>Tipe Pembayaran</th>
+                        <th>Status Pembayaran</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      {% for item in order %}
+                          <tr id="sale-{{ item.no_faktur_penjualan }}">
+                            <td>FJ{{ item.order_id }}</td>
+                            <td>{{ item.transaction_time }}</td>
+                            <td>{{ item.user }}</td>
+                            <td>{{ item.product_name }}</td>
+                            <td>{{ item.payment_type }}</td>
+                            <td>{{ item.payment_status }}</td>
+                            <td>{{ item.total }}</td>
+                            <td>{{ item.status }}</td>
+                          </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+              </div>
+              <!-- /.col -->
+            </div>
+            <!-- /.row -->
+          </div>
+          <!-- /.container-fluid -->
+        </section>
+    </div>
+
+{% endblock %}
+{% block javascripts %}
+<script>
+    window.onload = function() {
+        window.print();
+    }
+    setTimeout(function (){
+        window.location.replace('/model/order/');
+    }, 1000)
+</script>
+{% endblock %}

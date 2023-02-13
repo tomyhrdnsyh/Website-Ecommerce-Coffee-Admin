@@ -1,0 +1,162 @@
+{% extends "base-fullscreen.html" %}
+{% load static %}
+{% block title %} Login {% endblock %}
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} login-page bg-image{% endblock body_class %}
+
+{% block body_style %}
+    background-image: url('https://assets.bwbx.io/images/users/iqjWHBFdfxIU/ij2Y1AC4y9hI/v1/1200x-1.jpg');
+    height: 100vh;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+{% endblock body_style %}
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static '/css/all.min.css' %}">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="{% static '/css/icheck-bootstrap.min.css' %}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static '/css/adminlte.min.css' %}">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+  <div class="login-box">
+
+    <div class="login-logo">
+        <a target="_blank" rel="noopener noreferrer">Welcome<br> <b>Admin Kedai Mehak</b></a>
+    </div>
+
+    <!-- /.login-logo -->
+    <div class="card">
+      <div class="card-body login-card-body">
+
+            <p class="login-box-msg">
+            {% if msg %}
+              <span class="text-danger"> {{ msg | safe }} </span>
+            {% else %}
+                Input kredensial anda
+            {% endif %}
+
+        </p>
+
+        <form method="post" action="">
+
+          {% csrf_token %}
+          {{form.non_field_errors}}
+
+          <div class="input-group mb-3">
+            <input type="text" name="username" placeholder="Username" class="form-control" required id="id_username">
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-envelope"></span>
+              </div>
+            </div>
+          </div>
+          <div class="input-group mb-3">
+             <input type="password" name="password" placeholder="Password" class="form-control" required id="id_password">
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-lock"></span>
+              </div>
+            </div>
+          </div>
+          <div class="input-group mb-3">
+
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+            <p id="question" class="input-group-text"></p>
+
+            <input id="ans" type="text" required placeholder="CAPTCHA" class="form-control">
+
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-check-circle"></span>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-4">
+              <button type="reset" id="reset" class="btn btn-danger btn-block" value="reset">Reset</button>
+            </div>
+            <!-- /.col -->
+            <div class="col-8">
+              <button type="submit" name="login" class="btn btn-primary btn-block">Masuk</button>
+            </div>
+            <!-- /.col -->
+          </div>
+        </form>
+
+        <br /><br />
+
+      </div>
+      <!-- /.login-card-body -->
+    </div>
+
+  </div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+$('button[type=submit]').attr('disabled', 'disabled');
+
+var randomNum1;
+var randomNum2;
+
+//set the largeest number to display
+
+var maxNum = 20;
+var total;
+
+randomNum1 = Math.ceil(Math.random() * maxNum);
+randomNum2 = Math.ceil(Math.random() * maxNum);
+total = randomNum1 + randomNum2;
+
+$("#question").prepend(randomNum1 + " + " + randomNum2);
+
+// When users input the value
+
+$("#ans").keyup(function() {
+
+  var input = $(this).val();
+  var slideSpeed = 200;
+
+  $('#message').hide();
+
+  if (input == total) {
+
+    $('button[type=submit]').removeAttr('disabled');
+    $('#success').slideDown(slideSpeed);
+    $('#fail').slideUp(slideSpeed);
+
+  } else {
+
+    $('button[type=submit]').attr('disabled', 'disabled');
+    $('#fail').slideDown(slideSpeed);
+    $('#success').slideUp(slideSpeed);
+
+  }
+
+});
+
+// Wheen "reset button" click, generating new randomNum1 & randomNum2
+$("#reset").on("click", function() {
+  randomNum1 = Math.ceil(Math.random() * maxNum);
+  randomNum2 = Math.ceil(Math.random() * maxNum);
+  total = randomNum1 + randomNum2;
+  $("#question").empty();
+  $("#ans").val('');
+  $("#question").prepend(randomNum1 + " + " + randomNum2);
+});
+</script>
+{% endblock javascripts %}

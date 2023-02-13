@@ -84,7 +84,7 @@ def registration(request):
     user.set_password(data.get('password'))
     user.save()
 
-    print(user)
+    # print(user)
 
     response = {"message": "Create user done!"}
     return Response(response)
@@ -157,19 +157,21 @@ def history_order(request):
     else:
         order = Order.objects.order_by('-order_id').filter(user=user). \
             values('order_id', 'product__name', 'gross_amount', 'status',
-                   'orderdetails__qty')
+                   'orderdetails__qty', 'transaction_time')
 
         df = pd.DataFrame(order)
-        df_group = df.groupby(['order_id', 'product__name', 'status']).sum().to_dict(orient='index')
-
+        df_group = df.groupby(['order_id', 'product__name', 'status', 'transaction_time']).sum().to_dict(orient='index')
+        # print(df_group)
         raw_dd = defaultdict(list)
         for index, row in df_group.items():
+
             raw_dd[index[0]].append(
                 {
                     'qty': int(row['orderdetails__qty']),
                     'product__name': index[1],
                     'order__gross_amount': f"{row['gross_amount']:,}",
-                    'order__status': index[2]
+                    'order__status': index[2],
+                    'datetime': index[3].to_pydatetime().date()
                 }
             )
 
@@ -185,7 +187,8 @@ def history_order(request):
                     'qty': qty if len(qty) < 4 else qty[:4] + '...',
                     'product__name': name if len(name) < 20 else name[:20] + '...',
                     'order__gross_amount': price if len(price) < 10 else price[:10] + '...',
-                    'order__status': value[0].get('order__status')
+                    'order__status': value[0].get('order__status'),
+                    'datetime': value[0].get('datetime')
                 }
             )
             response = sorted(response, key=lambda d: d['order_id'], reverse=True)

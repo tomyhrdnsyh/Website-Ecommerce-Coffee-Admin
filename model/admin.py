@@ -1,6 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
+import csv
+from django.http import HttpResponse
+from django.shortcuts import redirect
+from django.template import loader
 
 from .models import *
 
@@ -43,13 +47,34 @@ class OrderDetailInline(admin.TabularInline):
     extra = 1
 
 
+class ExportCsvMixin:
+    def export_as_csv(self, request, queryset):
+        meta = self.model._meta
+        field_names = [field.name for field in meta.fields]
+        # field_names.append('user__address')
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for obj in queryset:
+            print([getattr(obj, field) for field in field_names])
+            row = writer.writerow([getattr(obj, field) for field in field_names])
+
+        return response
+
+    export_as_csv.short_description = "Export Selected"
+
+
 @admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
+class OrderAdmin(admin.ModelAdmin, ExportCsvMixin):
     inlines = [OrderDetailInline]
     list_display = ("order_id", "transaction_time", "user", "get_products",
                     "payment_type", "payment_status", "total", "status")
 
-    # search_fields = ["user", "status"]
+    search_fields = ['order_id', 'transaction_time', 'user__username', 'gross_amount', 'status',
+                     'payment_type', 'payment_status']
 
     @admin.display(ordering='product__price', description='Total')
     def total(self, obj):
@@ -62,8 +87,32 @@ class OrderAdmin(admin.ModelAdmin):
         return " || ".join([f"{p['orderdetails__qty']}x {p['name']}" for p in obj.product.values('name',
                                                                                                  'orderdetails__qty')])
 
-    # def get_qty(self):
-    #     return self.orderdetails.qty
+    actions = ['export_pdf']
+
+    def export_pdf(self, request, queryset):
+        context = {}
+        order = []
+        for item in queryset:
+            order.append(
+                {
+                    'order_id': item.order_id,
+                    'transaction_time': item.transaction_time,
+                    'user': item.user,
+                    'product_name': " || ".join([f"{p['orderdetails__qty']}x {p['name']}" for p in item.product.values('name', 'orderdetails__qty')]),
+                    'payment_type': item.payment_type if item.payment_type is not None else '-',
+                    'payment_status': item.payment_status if item.payment_status is not None else '-',
+                    'total': sum([total['price'] * total['orderdetails__qty'] for total in item.product.values('price', 'orderdetails__qty')]),
+                    'status': item.status
+                }
+            )
+
+        context['order'] = order
+        load_template = 'pdf-order.html'
+        context['segment'] = load_template
+        html_template = loader.get_template(load_template)
+        return HttpResponse(html_template.render(context, request))
+
+    export_pdf.short_description = "Cetak PDF Order yang dipilih"
 
 
 # @admin.register(OrderDetails)
